@@ -26,6 +26,8 @@ go.work.sum
 
 # Air temp directory
 tmp
+# Binaries
+dist
 
 # env file
 .env
