@@ -11,7 +11,7 @@
 
 <div class="alert alert-danger text-center d-none" id="card-messages"></div>
 <form action="/payment-succeeded" method="post"
-    name="charge_form" id="charge_form"
+    name="charge_form" id="charge-form"
     class="d-block needs-validation charge-form"
     autocomplete="off" novalidate="">
 
@@ -22,12 +22,12 @@
 
     <div class="mb-3">
         <label for="cardholder-name" class="form-label">Cardholder Name</label>
-        <input type="text" class="form-control" id="cardholder-name" name="cardholder_name" required="" autocomplete="cardholder-name-new">
+        <input type="text" class="form-control" id="cardholder-name" name="cardholder-name" required="" autocomplete="cardholder-name-new">
     </div>
 
     <div class="mb-3">
         <label for="cardholder-email" class="form-label">Cardholder Email</label>
-        <input type="email" class="form-control" id="cardholder-email" name="cardholder_email" required="" autocomplete="cardholder-email-new">
+        <input type="email" class="form-control" id="cardholder-email" name="cardholder-email" required="" autocomplete="cardholder-email-new">
     </div>
 
     <!-- Card number will be built by stripe -->
@@ -93,7 +93,7 @@ function showCardSuccess() {
 }
 
 function val() {
-    let form = document.getElementById("charge_form");
+    let form = document.getElementById("charge-form");
 
     if (form.checkValidity() === false) {
         this.event.preventDefault();
@@ -147,7 +147,7 @@ function val() {
                             document.getElementById("payment-currency").value = result.paymentIntent.currency;
                             processing.classList.add("d-none")
                             showCardSuccess();
-                            // would submit the form
+                            document.getElementById("charge-form").submit();
                         }
                     }
                 })
