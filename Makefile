@@ -1,7 +1,6 @@
 include .env
 GOSTRIPE_PORT=4000
 API_PORT=4001
-DSN=root@tcp(localhost:3306)/widgets?parseTime=true&tls=false
 
 ## build: builds all binaries
 build: clean build_front build_back
@@ -25,6 +24,11 @@ build_back:
 	@echo "Building back end..."
 	@go build -o dist/gostripe_api ./cmd/api
 	@echo "Back end built!"
+
+## Start Air with the DSN set
+dev_front:
+	@echo "Starting the HMR for the frontend"
+	@env DB_DSN=${DB_DSN} STRIPE_KEY=${STRIPE_KEY} air
 
 ## start: starts front and back end
 start: start_front start_back
