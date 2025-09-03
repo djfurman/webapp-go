@@ -40,6 +40,7 @@ type Order struct {
 	ID            int       `json:"id"`
 	WidgetID      int       `json:"widget_id"`
 	TransactionID int       `json:"transaction_id"`
+	CustomerID    int       `json:"customer_id"`
 	StatusID      int       `json:"status_id"`
 	Quantity      int       `json:"quantity"`
 	Amount        int       `json:"amount"`
@@ -68,6 +69,8 @@ type Transaction struct {
 	ID                  int       `json:"id"`
 	Amount              int       `json:"amount"`
 	Currency            string    `json:"currency"`
+	ExpiryMonth         int       `json:"expiry_month"`
+	ExpiryYear          int       `json:"expiry_year"`
 	LastFour            string    `json:"last_four"`
 	BankReturnCode      string    `json:"bank_return_code"`
 	TransactionStatusID int       `json:"transaction_status_id"`
@@ -82,6 +85,16 @@ type User struct {
 	LastName  string    `json:"last_name"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
+}
+
+// Customer is the type for Customers
+type Customer struct {
+	ID        int       `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
@@ -141,11 +154,13 @@ func (m *DBModel) InsertTransaction(txn Transaction) (int, error) {
 			last_four,
 			bank_return_code,
 			transaction_status_id,
+			expiry_month,
+			expiry_year,
 			created_at,
 			updated_at
 		)
 	Values
-		(?, ?, ?, ?, ?, NOW(), NOW())
+		(?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
 	`
 
 	result, err := m.DB.ExecContext(ctx, qry,
@@ -154,6 +169,8 @@ func (m *DBModel) InsertTransaction(txn Transaction) (int, error) {
 		txn.LastFour,
 		txn.BankReturnCode,
 		txn.TransactionStatusID,
+		txn.ExpiryMonth,
+		txn.ExpiryYear,
 	)
 
 	if err != nil {
@@ -182,11 +199,12 @@ func (m *DBModel) InsertOrder(order Order) (int, error) {
 			status_id,
 			quantity,
 			amount,
+			customer_id,
 			created_at,
 			updated_at
 		)
 	Values
-		(?, ?, ?, ?, ?, NOW(), NOW())
+		(?, ?, ?, ?, ?, ?, NOW(), NOW())
 	`
 
 	result, err := m.DB.ExecContext(ctx, qry,
@@ -195,8 +213,83 @@ func (m *DBModel) InsertOrder(order Order) (int, error) {
 		order.StatusID,
 		order.Quantity,
 		order.Amount,
+		order.CustomerID,
 	)
 
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id), nil
+}
+
+// InsertUser inserts a new user and returns it's ID from the database
+func (m *DBModel) InsertUser(user User) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	sql := `
+	Insert Into
+		users
+		(
+			first_name,
+			last_name,
+			email,
+			password_hash,
+			created_at,
+			updated_at
+		)
+	Values
+		(?, ?, ?, ?, NOW(), NOW())
+	`
+
+	result, err := m.DB.ExecContext(ctx, sql,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.Password,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id), nil
+}
+
+// InsertCustomer inserts a new customer to the DB and returns their ID
+func (m *DBModel) InsertCustomer(customer Customer) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	sql := `
+	Insert Into
+		customers
+		(
+			first_name,
+			last_name,
+			email,
+			created_at,
+			updated_at
+		)
+	Values
+		(?, ?, ?, NOW(), NOW())
+	`
+
+	result, err := m.DB.ExecContext(ctx, sql,
+		customer.FirstName,
+		customer.LastName,
+		customer.Email,
+	)
 	if err != nil {
 		return 0, err
 	}

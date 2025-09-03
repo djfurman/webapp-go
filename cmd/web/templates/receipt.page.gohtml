@@ -8,7 +8,7 @@
 <h2 class="mt-5">Receipt</h2>
 <hr>
 <p>Payment Intent: {{index .Data "pi"}}</p>
-<p>Payee Name: {{index .Data "cardholder"}}</p>
+<p>Customer Name: {{index .Data "customer_first_name"}} {{index .Data "customer_last_name"}}</p>
 <p>Payee Email: {{index .Data "email"}}</p>
 <p>Payment Method: {{index .Data "pm"}}</p>
 <p>Payment Amount: {{index .Data "pa"}}</p>
